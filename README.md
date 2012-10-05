@@ -13,3 +13,8 @@ Funcionalidad:
  - Interpreta comandos (solo en el canal, no en modo privado):
     - @hello: simplemente saluda al usuario que envio el comando
     - @meeting: nos indica fecha y lugar de la proxima reunion
+
+
+Changelog:
+
+ - Agregamos una consulta al API de Meetup como ejemplo.

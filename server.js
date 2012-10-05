@@ -1,6 +1,11 @@
 // Cargamos el modulo IRC
 var irc = require('irc');
 
+// Cargamos modulo Requesta pra realizar las consultas al API de Meetup
+var request = require('request');
+var apiKeyMeetup = '5d70163957776b7522591d6649533c39';
+var nameGroupMeetup = 'NodeJS-Argentina';
+
 // Creamos el Cliente para nuestro Bot
 var bot = new irc.Client('irc.freenode.net', 'bot-node-ar', {
   debug: false,
@@ -38,7 +43,17 @@ bot.addListener('message', function (from, to, message) {
     }
     
     if ( message.match(/@meeting/i) ) {
-      bot.say(to, irc.colors.wrap('orange', 'La proxima reunion es: Viernes 19/10 a las 19 hs, lugar a definir.' + irc.colors.wrap('light_gray', ' (respuesta al comando @meeting)')));
+//      bot.say(to, irc.colors.wrap('orange', 'La proxima reunion es: Viernes 19/10 a las 19 hs, lugar a definir.' + irc.colors.wrap('light_gray', ' (respuesta al comando @meeting)')));
+
+      request('https://api.meetup.com/2/events?key='+apiKeyMeetup+'&sign=true&group_urlname='+nameGroupMeetup+'&page=20', function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          console.log(JSON.parse(body).results[0].name);
+          console.log(JSON.parse(body).results[0].description);
+          bot.say(to, irc.colors.wrap('orange', 'La proxima reunion es: ' + JSON.parse(body).results[0].name));
+          bot.say(to, irc.colors.wrap('orange', JSON.parse(body).results[0].description));
+        }
+      });
+
     }
     
   } else { // Mensajes privados
