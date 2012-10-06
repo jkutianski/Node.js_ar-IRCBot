@@ -1,15 +1,12 @@
-// Cargamos el modulo IRC
-var irc = require('irc');
-
-// Cargamos modulo Requesta pra realizar las consultas al API de Meetup
-var request = require('request');
-var apiKeyMeetup = '5d70163957776b7522591d6649533c39';
-var nameGroupMeetup = 'NodeJS-Argentina';
+// Cargamos el modulo IRC, Request y las variables de la configuracion
+var irc = require('irc')
+  ,request = require('request')
+  ,config = require('./config.json');
 
 // Creamos el Cliente para nuestro Bot
-var bot = new irc.Client('irc.freenode.net', 'bot-node-ar', {
+var bot = new irc.Client(config.irc.server, config.irc.bot.nick, {
   debug: false,
-  channels: ['#nodejs_ar']
+  channels: [config.irc.channel]
 });
 
 // Capturamos los posibles errores en el Bot
@@ -23,11 +20,11 @@ bot.addListener('quit', function(message) {
 });
 
 // Capturamos los mensajes enviados en un canal especifico
-bot.addListener('message#nodejs_ar', function (from, message) {
+bot.addListener('message' + config.irc.channel, function (from, message) {
   console.log('<%s> %s', from, message);
-  bot.say('#nodejs_ar', from + ' dijo: ' + message);
-  bot.say('#nodejs_ar', irc.colors.wrap('light_gray', from + ', por ahora solo repito los mensajes, ya evolucionare, qui si io ...'));
-  bot.say('#nodejs_ar', irc.colors.wrap('light_gray', 'Podes probar los comando: ') + irc.colors.wrap('orange', '@hello, @meeting, '));
+  bot.say(config.irc.channel, from + ' dijo: ' + message);
+  bot.say(config.irc.channel, irc.colors.wrap('light_gray', from + ', por ahora solo repito los mensajes, ya evolucionare, qui si io ...'));
+  bot.say(config.irc.channel, irc.colors.wrap('light_gray', 'Podes probar los comando: ') + irc.colors.wrap('orange', '@hello, @meeting, '));
 });
 
 // Capturamos los mensajes generales, los podemos utilizar para identificar peticiones al Bot
@@ -45,7 +42,7 @@ bot.addListener('message', function (from, to, message) {
     if ( message.match(/@meeting/i) ) {
 //      bot.say(to, irc.colors.wrap('orange', 'La proxima reunion es: Viernes 19/10 a las 19 hs, lugar a definir.' + irc.colors.wrap('light_gray', ' (respuesta al comando @meeting)')));
 
-      request('https://api.meetup.com/2/events?key='+apiKeyMeetup+'&sign=true&group_urlname='+nameGroupMeetup+'&page=20', function (error, response, body) {
+      request('https://api.meetup.com/2/events?key='+config.meetup.apikey+'&sign=true&group_urlname='+config.meetup.groupname+'&page=20', function (error, response, body) {
         if (!error && response.statusCode == 200) {
           console.log(JSON.parse(body).results[0].name);
           console.log(JSON.parse(body).results[0].description);
@@ -69,7 +66,7 @@ bot.addListener('pm', function(nick, message) {
 // Capturamos las uniones al canal
 bot.addListener('join', function(channel, who) {
   console.log('%s se ha unido a %s', who, channel);
-  bot.say('#nodejs_ar', "Bienvenido, " + who + " !!!");
+  bot.say(config.irc.channel, "Bienvenido, " + who + " !!!");
 });
 
 // Capturamos la salida de los usuarios del canal

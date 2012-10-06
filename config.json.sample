@@ -1,0 +1,13 @@
+{ 
+	"meetup" : {
+           "groupname" : "NodeJS-Argentina",
+           "apikey" : ""
+         },
+        "irc" : {
+           "channel" : "#nodejs_ar",
+           "server" : "irc.freenode.net",
+           "bot" : {
+              "nick" : "bot-node-ar"
+           }
+         }
+}
