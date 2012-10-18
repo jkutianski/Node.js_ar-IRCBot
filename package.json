@@ -1,0 +1,12 @@
+{ 
+    "name" : "node.js_ar-IRCBot"
+  , "description" : "IRC Bot para Node.js Argentina"
+  , "version" : "0.1.0"
+  , "keywords" : ["meetup","api"]
+  , "main" : "index.js"
+  , "author" : "German Peraferrer <http://www.meetup.com/NodeJS-Argentina/members/59535632/> ,Juan Pablo Kutianski <http://www.meetup.com/NodeJS-Argentina/members/46861012/>"
+  , "dependencies" : {
+        "irc": "0.3.4",
+        "meetup-api": "0.1.1"
+    }
+}
