@@ -1,7 +1,7 @@
 // Cargamos el modulo IRC, Request y las variables de la configuracion
 var irc = require('irc')
-  ,request = require('request')
-  ,config = require('./config.json');
+  , config = require('./config.json')
+  , meetup = require('meetup-api')(config.meetup.apikey);
 
 // Creamos el Cliente para nuestro Bot
 var bot = new irc.Client(config.irc.server, config.irc.bot.nick, {
@@ -19,14 +19,6 @@ bot.addListener('quit', function(message) {
   console.log('Salio: %s: %s', message.command, message.args.join(' '));
 });
 
-// Capturamos los mensajes enviados en un canal especifico
-bot.addListener('message' + config.irc.channel, function (from, message) {
-  console.log('<%s> %s', from, message);
-  bot.say(config.irc.channel, from + ' dijo: ' + message);
-  bot.say(config.irc.channel, irc.colors.wrap('light_gray', from + ', por ahora solo repito los mensajes, ya evolucionare, qui si io ...'));
-  bot.say(config.irc.channel, irc.colors.wrap('light_gray', 'Podes probar los comando: ') + irc.colors.wrap('orange', '@hello, @meeting, '));
-});
-
 // Capturamos los mensajes generales, los podemos utilizar para identificar peticiones al Bot
 bot.addListener('message', function (from, to, message) {
   console.log('%s => %s: %s', from, to, message);
@@ -42,12 +34,12 @@ bot.addListener('message', function (from, to, message) {
     if ( message.match(/@meeting/i) ) {
 //      bot.say(to, irc.colors.wrap('orange', 'La proxima reunion es: Viernes 19/10 a las 19 hs, lugar a definir.' + irc.colors.wrap('light_gray', ' (respuesta al comando @meeting)')));
 
-      request('https://api.meetup.com/2/events?key='+config.meetup.apikey+'&sign=true&group_urlname='+config.meetup.groupname+'&page=20', function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-          console.log(JSON.parse(body).results[0].name);
-          console.log(JSON.parse(body).results[0].description);
-          bot.say(to, irc.colors.wrap('orange', 'La proxima reunion es: ' + JSON.parse(body).results[0].name));
-          bot.say(to, irc.colors.wrap('orange', JSON.parse(body).results[0].description));
+      meetup.getEvents({'group_urlname' : config.meetup.groupname}, function(error,response) {
+        if (!error) {
+          var d = new Date(response.results[0].time+3600000);
+          bot.say(to, 'La proxima reunion es "\u0002' + response.results[0].name + '\u0002", el dia \u0002' +  d.getDate() + '/' + d.getMonth() + '/' + d.getFullYear() + '\u0002 a las \u0002' + d.toTimeString() + '\u0002');
+          bot.say(to, '\u0002Van a ir ' + response.results[0].yes_rsvp_count + ' miembros \u0002 y \u0002quedan ' + (response.results[0].rsvp_limit - response.results[0].yes_rsvp_count) + ' lugares libres\u0002');
+          bot.say(to, '\u0002' + response.results[0].event_url + '\u0002');
         }
       });
 
@@ -67,6 +59,7 @@ bot.addListener('pm', function(nick, message) {
 bot.addListener('join', function(channel, who) {
   console.log('%s se ha unido a %s', who, channel);
   bot.say(config.irc.channel, "Bienvenido, " + who + " !!!");
+  bot.say(config.irc.channel, irc.colors.wrap('light_gray', 'Podes probar los comando: ') + irc.colors.wrap('orange', '@hello, @meeting, '));
 });
 
 // Capturamos la salida de los usuarios del canal
